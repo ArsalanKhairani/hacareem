@@ -87,3 +87,9 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# For nodeJS modules
+node_modules/
+
+# For pycharm settings
+.idea/
