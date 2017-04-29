@@ -25,8 +25,9 @@ angular.module('starter', ['ionic'])
   .controller('mapController', function($scope, $http, $ionicLoading) {
 
     var marker = {};
-    $scope.longitude = 0;
-    $scope.latitude = 0;
+    var map = {};
+    $scope.longitude = 67.00994;
+    $scope.latitude = 24.86146;
     $scope.phoneNumber = '';
     $scope.carType = '';
     $scope.pickUp = '';
@@ -34,28 +35,38 @@ angular.module('starter', ['ionic'])
     $scope.promoCode = '';
     $scope.isSMSSend = false;
     $scope.isRideValid = false;
-    $scope.locations = [];
+    $scope.locations = [{title: 'Wajih'}, {title: 'Arsalan'}];
+    $scope.carTypes = [];
     $scope.fairEstimate = '-';
+
+    $scope.etaInfo = {};
+    $scope.etaText = 'Wajih';
 
     var loadingTemplate = '<ion-spinner icon="ios"></ion-spinner>';
 
+    var baseURL = 'https://ck4s04794j.execute-api.us-east-1.amazonaws.com/prod/';
+
     var urlMap = {
-      GEN_AUTH_TOKEN: '',
-      BOOK_RIDE: '',
-      ETA: '',
+      GEN_AUTH_TOKEN: baseURL + 'generate_auth_token/',
+      BOOK_RIDE: baseURL + '',
+      ETA: baseURL + 'get_eta_time/',
       ETA_PRICE: '',
-      LOCATIONS: ''
+      LOCATIONS: baseURL + 'getLocations/',
+      GET_PRODUCTS: baseURL + 'get_products/'
     };
 
 
     $scope.initMap = function() {
       var mylocation = {lat: 24.86146, lng: 67.00994};
-      var map = new google.maps.Map(document.getElementById("googleMap"), {
+
+      map = new google.maps.Map(document.getElementById("googleMap"), {
         center: mylocation,
         zoom: 17
       });
 
-      addMarker(mylocation, 'Hello World', map);
+      addMarker(mylocation, $scope.etaText, map);
+
+      getProducts(mylocation);
 
       // marker = new google.maps.Marker({
       //   position: mylocation,
@@ -68,6 +79,22 @@ angular.module('starter', ['ionic'])
       // });
 
     };
+
+    function getProducts(location) {
+      $http.get(urlMap.GET_PRODUCTS, {params: location})
+        .success(function (data, status, headers, config) {
+          if (data && data.products) {
+            angular.forEach(data.products, function (val, key) {
+              if (val.availibility_now) {
+                $scope.carTypes.push({title: val.display_name, product_id: val.product_id});
+              }
+            });
+          }
+          hideLoading();
+        }, function errorCallback() {
+          hideLoading();
+        });
+    }
 
     function showLoading() {
       $ionicLoading.show({template: loadingTemplate});
@@ -93,14 +120,33 @@ angular.module('starter', ['ionic'])
       if (pos) {
         $scope.longitude = pos.latLng.lng();
         $scope.latitude = pos.latLng.lat();
-        callETA();
+        getETA();
       }
     }
 
-    function callETA() {
-      $http.get('/api/v1/getEta')
-        .success(function (data, status, headers, config) {
+    function getETAObject() {
+      return {
+        lat: $scope.latitude,
+        long: $scope.longitude,
+        p_id: $scope.carType.product_id
+      };
+    }
 
+    function getETA(carType) {
+      $http.get(urlMap.ETA, {params: getETAObject()})
+        .success(function (data) {
+          if (data && data.times) {
+            angular.forEach(data.times, function (val, key) {
+              $scope.etaInfo[val.display_name] = (val.eta / 60);
+            });
+
+            if (carType) {
+              $scope.etaText = $scope.etaInfo[carType.title];
+              addMarker({lng: $scope.longitude, lat: $scope.latitude}, 'ETA for '+carType.title+' is : ' + $scope.etaText.toFixed(2) + 'seconds', map);
+            }
+
+            hideLoading();
+          }
         }, function errorCallback() {
           hideLoading();
         });
@@ -117,7 +163,7 @@ angular.module('starter', ['ionic'])
         promo_code: $scope.promo_code
       };
 
-      $http.post('/api/v1/book_ride', params).then(function (response) {
+      $http.post(urlMap.BOOK_RIDE, params).then(function (response) {
           if (response && response.ok) {
             clearAllFields();
             hideLoading();
@@ -139,12 +185,13 @@ angular.module('starter', ['ionic'])
       $scope.isSMSSend = !$scope.isSMSSend;
       $http.post(urlMap.GEN_AUTH_TOKEN, {number: number})
         .success(function(data, status, headers, config) {
-          if (data && data.success) {
+          if (data && data.message && data.message.enc_auth_token) {
             $scope.isRideValid = true;
-            createRide();
+            $scope.verificationCode = data.enc_auth_token;
+            hideLoading();
           }
         })
-        .error(function errorCallback() {
+        .error(function errorCallback(response) {
           hideLoading();
         });
     };
@@ -159,7 +206,23 @@ angular.module('starter', ['ionic'])
       });
     };
 
+    $scope.setPickupLocation = function (loc) {
+      $scope.pickUp = loc;
+      getEta();
+    };
+
+    $scope.setDropoffLocation = function (loc) {
+      $scope.dropOff = loc;
+      getEta();
+    };
+
+    $scope.setCarType = function (carType) {
+      $scope.carType = carType;
+      getETA(carType);
+    };
+
     $scope.initMap();
+    showLoading();
 
     // function initGeolocation() {
     //   if(navigator.geolocation) {
