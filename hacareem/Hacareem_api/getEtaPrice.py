@@ -1,5 +1,6 @@
 def lambda_handler(event, context):
-    result = {'actions_status': 'failure'}
+    import json
+    result = {'statusCode': 400, 'body': json.dumps({'action_status': 'failure'})}
     s_lat = event.get('s_lat', 0)
     s_lon = event.get('s_lon', 0)
     e_lat = event.get('e_lat', 0)
@@ -28,4 +29,4 @@ def lambda_handler(event, context):
     if response and getattr(response, 'status_code', 0) != 200:
         return result
 
-    return response
+    return {'statusCode': 200, 'body': response.text}
