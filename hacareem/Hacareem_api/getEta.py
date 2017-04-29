@@ -1,22 +1,17 @@
-
-def oak():
-    event = {'lat': '123', 'lon':'123'}
-    result = {'actions_status': 'faliure'}
-    lat = event['lat']
-    lon = event['lon']
+def lambda_handler(event, context):
+    result = {'actions_status': 'failure'}
+    lat = event.get('lat', 0)
+    lon = event.get('lon', 0)
     payload = {'start_latitude': lat, 'start_longitude': lon}
     headers = {'Authorization':'test-crl54u6cj8f3a7hkc304359lhg'}
     import requests
 
     try:
         response = requests.get(url='http://qa-interface.careem-engineering.com/v1/estimates/time', headers=headers, params=payload)
-    except Exception as e:
+    except Exception:
         return result
 
-    if response.status_code == 200:
-        return response.content
+    if response and getattr(response, 'status_code', 0) != 200:
+        return result
 
-    return result
-
-if __name__ == '__main__':
-    print oak()
+    return response
