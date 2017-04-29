@@ -1,13 +1,13 @@
+def lambda_handler(event, context):
+    result = {'actions_status': 'failure'}
+    s_lat = event.get('s_lat', 0)
+    s_lon = event.get('s_lon', 0)
+    e_lat = event.get('e_lat', 0)
+    e_lon = event.get('e_lon', 0)
+    # For now it is NOW
+    b_type = event.get('b_type', 'NOW')
 
-def oak():
-    event = {'s_lat': '123', 's_lon':'123'}
-    result = {'actions_status': 'faliure'}
-    s_lat = event.get('s_lat', '')
-    s_lon = event.get('s_lon', '')
-    e_lat = event.get('e_lat', '')
-    e_lon = event.get('e_lon', '')
-    b_type = event.get('b_type', '')
-    p_id = event.get('p_id', '')
+    p_id = event.get('p_id', 0)
     
     payload = {
         'start_latitude': s_lat,
@@ -22,10 +22,10 @@ def oak():
 
     try:
         response = requests.get(url='http://qa-interface.careem-engineering.com/v1/estimates/price', headers=headers, params=payload)
-    except Exception as e:
+    except Exception:
+        return result
+
+    if response and getattr(response, 'status_code', 0) != 200:
         return result
 
     return response
-
-if __name__ == '__main__':
-    print oak().content
