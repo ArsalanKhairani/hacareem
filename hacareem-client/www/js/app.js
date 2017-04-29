@@ -22,11 +22,31 @@ angular.module('starter', ['ionic'])
     }
   });
 })
-  .controller('mapController', function($scope) {
+  .controller('mapController', function($scope, $http, $ionicLoading) {
 
     var marker = {};
     $scope.longitude = 0;
     $scope.latitude = 0;
+    $scope.phoneNumber = '';
+    $scope.carType = '';
+    $scope.pickUp = '';
+    $scope.dropOff = '';
+    $scope.promoCode = '';
+    $scope.isSMSSend = false;
+    $scope.isRideValid = false;
+    $scope.locations = [];
+    $scope.fairEstimate = '-';
+
+    var loadingTemplate = '<ion-spinner icon="ios"></ion-spinner>';
+
+    var urlMap = {
+      GEN_AUTH_TOKEN: '',
+      BOOK_RIDE: '',
+      ETA: '',
+      ETA_PRICE: '',
+      LOCATIONS: ''
+    };
+
 
     $scope.initMap = function() {
       var mylocation = {lat: 24.86146, lng: 67.00994};
@@ -49,7 +69,15 @@ angular.module('starter', ['ionic'])
 
     };
 
-    function addMarker(latlng,title,map) {
+    function showLoading() {
+      $ionicLoading.show({template: loadingTemplate});
+    }
+
+    function hideLoading() {
+      $ionicLoading.hide();
+    }
+
+    function addMarker(latlng, title, map) {
       var marker = new google.maps.Marker({
         position: latlng,
         map: map,
@@ -70,12 +98,68 @@ angular.module('starter', ['ionic'])
     }
 
     function callETA() {
+      $http.get('/api/v1/getEta')
+        .success(function (data, status, headers, config) {
+
+        }, function errorCallback() {
+          hideLoading();
+        });
+    }
+
+    function getBookings() {
 
     }
 
+    function createRide() {
+      var params = {
+        longitude: $scope.longitude,
+        latitude: $scope.latitude,
+        promo_code: $scope.promo_code
+      };
+
+      $http.post('/api/v1/book_ride', params).then(function (response) {
+          if (response && response.ok) {
+            clearAllFields();
+            hideLoading();
+          }
+      }, function errorCallback() {
+        hideLoading();
+      });
+    }
+
+    function clearAllFields() {
+      angular.forEach($scope.params, function (val, key) {
+          $scope.params[key] = '';
+      });
+    }
+
+    $scope.verifyNumber = function (number) {
+      showLoading();
+
+      $scope.isSMSSend = !$scope.isSMSSend;
+      $http.post(urlMap.GEN_AUTH_TOKEN, {number: number})
+        .success(function(data, status, headers, config) {
+          if (data && data.success) {
+            $scope.isRideValid = true;
+            createRide();
+          }
+        })
+        .error(function errorCallback() {
+          hideLoading();
+        });
+    };
+
+    $scope.searchLocation = function (query) {
+      $http.get(urlMap.LOCATIONS).then(function (response) {
+        if (response && response.ok) {
+          $scope.locations = response.locations;
+        }
+      }, function errorCallback() {
+        hideLoading();
+      });
+    };
+
     $scope.initMap();
-
-
 
     // function initGeolocation() {
     //   if(navigator.geolocation) {

@@ -51,11 +51,9 @@
 
     <ion-view>
       <ion-content>
-        <div id="googleMap" style="width:100%;height:400px;" ng-controller="mapController"></div>
+        <div ng-controller="mapController">
 
-
-
-
+        <div id="googleMap" style="width:100%;height:400px;"></div>
         <div class="container">
           <div class="row">
             <div>
@@ -80,42 +78,54 @@
                     <div class="col-md-6">
                       <div class="form-group">
                         <label class="control-label" for="name">Pickup Location</label>
-                        <input id="p_loc" name="name" type="text" placeholder="IBa main campus" class="form-control input-md">
+                        <input ng-model="pickUp" id="p_loc" name="name" type="text" placeholder="IBa main campus" class="form-control input-md">
                       </div>
                     </div>
                     <!-- Text input-->
                     <div class="col-md-6">
                       <div class="form-group">
                         <label class="control-label" for="email">Drop Location</label>
-                        <input id="d_loc" name="email" type="text" placeholder="North Karachi" class="form-control input-md">
+                        <input ng-model="dropOff" id="d_loc" name="email" type="text" placeholder="North Karachi" class="form-control input-md">
                       </div>
                     </div>
                     <!-- Text input-->
                     <div class="col-md-6">
                       <div class="form-group">
                         <label class="control-label" for="date">Fair Estimate</label><br>
-                        <label class="control-label" id="fair" name="date">-</label>
+                        <label class="control-label" id="fair" name="date">{{fairEstimate}}</label>
                       </div>
                     </div>
                     <!-- Select Basic -->
                     <div class="col-md-6">
                       <div class="form-group">
                         <label class="control-label" for="time">Promo Code</label>
-                        <input id="p_code" name="email" type="text" placeholder="Chalo50" class="form-control input-md">
+                        <input id="p_code" name="email" ng-model="promoCode" type="text" placeholder="Chalo50" class="form-control input-md">
                       </div>
                     </div>
-                    <!-- Button -->
+
+                  </div>
+
+                  <div class="row">
                     <div class="col-md-12">
-                      <div class="form-group">
-                        <br><button id="singlebutton" name="singlebutton" class="btn btn-lg btn-success center-block btn-group-justified">Chalo!</button>
+                      <div class="form-group col-xs-6">
+                        <label class="control-label" for="time">Contact Number</label>
+                        <input id="p_code" ng-model="phoneNumber" name="email" type="text" placeholder="+92-3433450811" class="form-control input-md">
                       </div>
+
+                      <div class="form-group col-xs-6">
+                        <br>
+                        <button id="singlebutton" name="singlebutton" class="btn btn-lg btn-success center-block btn-group-justified" ng-click="verifyNumber(phoneNumber)" ng-disabled="!isRideValid && isSMSSend">{{isSMSSend ? "Chalo" : "Verify"}}</button>
+                      </div>
+
                     </div>
                   </div>
+
                 </form>
                 <!-- form end -->
               </div>
             </div>
           </div>
+        </div>
         </div>
 
 
