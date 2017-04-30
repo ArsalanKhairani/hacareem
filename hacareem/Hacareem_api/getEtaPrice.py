@@ -1,15 +1,18 @@
 def lambda_handler(event, context):
     import json
     result = {'statusCode': 400, 'body': json.dumps({'action_status': 'failure'})}
-    s_lat = event.get('s_lat', 0)
-    s_lon = event.get('s_lon', 0)
-    e_lat = event.get('e_lat', 0)
-    e_lon = event.get('e_lon', 0)
+    s_lat = event.get('queryStringParameters', {}).get('s_lat', 0)
+    s_lon = event.get('queryStringParameters', {}).get('s_lon', 0)
+    e_lat = event.get('queryStringParameters', {}).get('e_lat', 0)
+    e_lon = event.get('queryStringParameters', {}).get('e_lon', 0)
     # For now it is NOW
-    b_type = event.get('b_type', 'NOW')
+    b_type = event.get('queryStringParameters', {}).get('b_type', 'NOW')
 
-    p_id = event.get('p_id', 0)
-    
+    p_id = event.get('queryStringParameters', {}).get('p_id')
+
+    if not p_id:
+        return result
+
     payload = {
         'start_latitude': s_lat,
         'start_longitude': s_lon,
@@ -18,11 +21,12 @@ def lambda_handler(event, context):
         'booking_type': b_type,
         'product_id': p_id
     }
-    headers = {'Authorization':'test-crl54u6cj8f3a7hkc304359lhg'}
+    headers = {'Authorization': 'test-crl54u6cj8f3a7hkc304359lhg'}
     import requests
 
     try:
-        response = requests.get(url='http://qa-interface.careem-engineering.com/v1/estimates/price', headers=headers, params=payload)
+        response = requests.get(url='http://qa-interface.careem-engineering.com/v1/estimates/price', headers=headers,
+                                params=payload)
     except Exception:
         return result
 
