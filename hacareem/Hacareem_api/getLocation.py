@@ -1,30 +1,36 @@
 def lambda_handler(event, context):
     import json
-    GOOGLE_API_KEY = 'AIzaSyCe7ujESqCXdWnyHENEM-4RJiH_TjCeBTc'
     result = {'statusCode': 400, 'body': json.dumps({'action_status': 'failure'})}
-    query = event.get('queryStringParameters', {}).get('query')
-    if not query:
+    s_lat = event.get('queryStringParameters', {}).get('s_lat', 0)
+    s_lon = event.get('queryStringParameters', {}).get('s_lon', 0)
+    e_lat = event.get('queryStringParameters', {}).get('e_lat', 0)
+    e_lon = event.get('queryStringParameters', {}).get('e_lon', 0)
+    # For now it is NOW
+    b_type = event.get('queryStringParameters', {}).get('b_type', 'NOW')
+
+    p_id = event.get('queryStringParameters', {}).get('p_id')
+
+    if not p_id:
         return result
 
-    url = 'https://maps.googleapis.com/maps/api/place/textsearch/json?query={}&key={}'.format(query, GOOGLE_API_KEY)
+    payload = {
+        'start_latitude': s_lat,
+        'start_longitude': s_lon,
+        'end_latitude': e_lat,
+        'end_longitude': e_lon,
+        'booking_type': b_type,
+        'product_id': p_id
+    }
+    headers = {'Authorization': 'test-crl54u6cj8f3a7hkc304359lhg'}
     import requests
 
     try:
-        response = requests.get(url=url)
-    except Exception as e:
+        response = requests.get(url='http://qa-interface.careem-engineering.com/v1/estimates/price', headers=headers,
+                                params=payload)
+    except Exception:
         return result
 
-    if response.status_code != 200:
+    if response and getattr(response, 'status_code', 0) != 200:
         return result
 
-    data = []
-    for res in json.loads(getattr(response, 'text', '')).get('results', []):
-        data.append({
-            'place_name': res.get('formatted_address', ''),
-            'lat': res.get('geometry', {}).get('location', {}).get('lat', 0),
-            'lng': res.get('geometry', {}).get('location', {}).get('lng', 0)
-        })
-
-    result['statusCode'] = 200
-    result['body'] = json.dumps(data)
-    return result
+    return {'statusCode': 200, 'body': response.text}
