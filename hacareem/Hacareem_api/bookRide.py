@@ -8,12 +8,8 @@ def lambda_handler(event, context):
     drop_details = {}
     result = {'statusCode': 400, 'body': json.dumps({'action_status': 'failure'})}
     body = json.loads(event.get('body', '{}'))
-    print event
-    print body
     enc_verification_code = body.get('enc_verification_code')
     verification_code = body.get('verification_code')
-    print enc_verification_code
-    print verification_code
 
     if not enc_verification_code or not verification_code:
         return result

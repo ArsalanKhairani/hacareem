@@ -69,16 +69,6 @@ angular.module('starter', ['ionic'])
 
       getProducts(mylocation);
 
-      // marker = new google.maps.Marker({
-      //   position: mylocation,
-      //   map: map,
-      //   title: 'Hello World!'
-      // });
-
-      // navigator.geolocation.getCurrentPosition(function(position) {
-      //   console.log(position);
-      // });
-
     };
 
     function getProducts(location) {
@@ -258,19 +248,6 @@ angular.module('starter', ['ionic'])
 
     $scope.initMap();
     showLoading();
-
-    // function initGeolocation() {
-    //   if(navigator.geolocation) {
-    //     // Call getCurrentPosition with success and failure callbacks
-    //     navigator.geolocation.getCurrentPosition(success, fail);
-    //   }
-    // }
-    //
-    // function success(position) {
-    //   document.getElementById('long').value = position.coords.longitude;
-    //   document.getElementById('lat').value = position.coords.latitude;
-    // }
-    // function fail() {}
 
   });
 
