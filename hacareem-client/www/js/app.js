@@ -22,7 +22,7 @@ angular.module('starter', ['ionic'])
     }
   });
 })
-  .controller('mapController', function($scope, $http, $ionicLoading) {
+  .controller('mapController', function($scope, $http, $ionicLoading, $timeout) {
 
     var marker = {};
     var map = {};
@@ -35,12 +35,13 @@ angular.module('starter', ['ionic'])
     $scope.promoCode = '';
     $scope.isSMSSend = false;
     $scope.isRideValid = false;
-    $scope.locations = [{title: 'Wajih'}, {title: 'Arsalan'}];
+    $scope.locations = [];
     $scope.carTypes = [];
     $scope.fairEstimate = '-';
 
     $scope.etaInfo = {};
     $scope.etaText = 'Wajih';
+    $scope.encVerificationCode = '';
 
     var loadingTemplate = '<ion-spinner icon="ios"></ion-spinner>';
 
@@ -48,10 +49,10 @@ angular.module('starter', ['ionic'])
 
     var urlMap = {
       GEN_AUTH_TOKEN: baseURL + 'generate_auth_token/',
-      BOOK_RIDE: baseURL + '',
+      BOOK_RIDE: baseURL + 'book_ride/',
       ETA: baseURL + 'get_eta_time/',
-      ETA_PRICE: '',
-      LOCATIONS: baseURL + 'getLocations/',
+      ETA_PRICE: baseURL + 'get_eta_price',
+      LOCATIONS: baseURL + 'get_locations/',
       GET_PRODUCTS: baseURL + 'get_products/',
     };
 
@@ -152,31 +153,65 @@ angular.module('starter', ['ionic'])
         });
     }
 
+    function getETAPriceObject() {
+      return {
+        s_lat: $scope.pickUp.lat,
+        s_lon: $scope.pickUp.lng,
+        e_lat: $scope.dropOff.lat,
+        e_lon: $scope.dropOff.lng,
+        b_type: 'NOW',
+        p_id: $scope.carType.product_id
+      };
+    }
+
+    function getETAPrice() {
+      $http.get(urlMap.ETA_PRICE, {params: getETAPriceObject()})
+        .success(function (data) {
+          if (data && data) {
+            $scope.fairEstimate = data.estimate;
+            hideLoading();
+          }
+        }, function errorCallback() {
+          hideLoading();
+        });
+    }
+
     function getBookings() {
 
     }
 
-    function createRide() {
+    $scope.createRide = function() {
       var params = {
-        longitude: $scope.longitude,
-        latitude: $scope.latitude,
-        promo_code: $scope.promo_code
+        p_id: $scope.carType.product_id,
+        p_lat: $scope.pickUp.lat,
+        p_lng: $scope.pickUp.lng,
+        d_lat: $scope.dropOff.lat,
+        d_lng: $scope.dropOff.lng,
+        promo_code: $scope.promoCode,
+        verification_code: $scope.verificationCode,
+        enc_verification_code: $scope.encVerificationCode,
+        phone_number: $scope.phoneNumber,
+        surge_confirmation_id: ""
       };
 
       $http.post(urlMap.BOOK_RIDE, params).then(function (response) {
-          if (response && response.ok) {
+          if (response) {
             clearAllFields();
             hideLoading();
           }
       }, function errorCallback() {
         hideLoading();
       });
-    }
+    };
 
     function clearAllFields() {
-      angular.forEach($scope.params, function (val, key) {
-          $scope.params[key] = '';
-      });
+      $scope.pickUp = '';
+      $scope.dropOff = '';
+      $scope.phoneNumber = '';
+      $scope.verificationCode = '';
+      $scope.promoCode = '';
+      $scope.isRideValid = false;
+      $scope.etaText = '';
     }
 
     $scope.verifyNumber = function (number) {
@@ -187,7 +222,7 @@ angular.module('starter', ['ionic'])
         .success(function(data, status, headers, config) {
           if (data && data.message && data.message.enc_auth_token) {
             $scope.isRideValid = true;
-            $scope.verificationCode = data.enc_auth_token;
+            $scope.encVerificationCode = data.message.enc_auth_token;
             hideLoading();
           }
         })
@@ -197,29 +232,23 @@ angular.module('starter', ['ionic'])
     };
 
     $scope.searchLocation = function (query) {
-      $http.get(urlMap.LOCATIONS).then(function (response) {
-        if (response && response.ok) {
-          $scope.locations = response.locations;
-          var dataList = document.getElementById('json-datalist');
-          angular.forEach($scope.locations, function (val) {
-            var option = document.createElement('option');
-            option.value = val['place_name'] | '';
-            dataList.appendChild(option);
-          });
-        }
-      }, function errorCallback() {
-        hideLoading();
-      });
+        $http.get(urlMap.LOCATIONS, {params: {query: query}}).then(function (response) {
+          if (response) {
+            $scope.locations = response.data;
+          }
+        }, function errorCallback() {
+          hideLoading();
+        });
     };
 
-    $scope.setPickupLocation = function (loc) {
+    $scope.setPickUpLocation = function (loc) {
       $scope.pickUp = loc;
-      getEta();
+      getETA();
     };
 
     $scope.setDropoffLocation = function (loc) {
       $scope.dropOff = loc;
-      getEta();
+      getETAPrice();
     };
 
     $scope.setCarType = function (carType) {

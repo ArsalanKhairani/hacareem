@@ -82,28 +82,22 @@
                     <div class="col-md-6">
                       <label class="control-label" for="name">Pickup Location</label>
                       <div class="dropdown">
-                        <button class="btn dropdown-toggle" type="button" data-toggle="dropdown" ng-model="pickUp.title">{{pickUp.title || "Select Pickup Location"}}
-                          <span class="caret"></span></button>
+                        <input type="text" data-toggle="dropdown" ng-model="pickUp.place_name" ng-change="searchLocation(pickUp.place_name)" ng-model-options='{ debounce: 500 }'>
+                        </input>
                         <ul class="dropdown-menu" ng-model="pickUp">
-                          <li ng-repeat="location in locations"><a href="#" ng-click="setPickupLocation(location)">{{location.title}}</a></li>
+                          <li ng-repeat="location in locations"><a href="#" ng-click="setPickUpLocation(location)">{{location.place_name}}</a></li>
                         </ul>
                       </div>
                     </div>
                     <!-- Text input-->
                     <div class="col-md-6">
-                      <!--<div class="form-group">-->
-                        <!--<label class="control-label" for="email">Drop Location</label>-->
-                        <!--<input ng-model="dropOff" id="d_loc" name="email" type="text" placeholder="North Karachi" class="form-control input-md">-->
-                      <!--</div>-->
                       <label class="control-label" for="name">Dropoff Location</label>
                       <div class="dropdown">
-                        <!--<button class="btn dropdown-toggle" type="button" data-toggle="dropdown" ng-model="dropOff.title">{{dropOff.title || "Select Pickup Location"}}-->
-                          <!--<span class="caret"></span></button>-->
-                        <!--<ul class="dropdown-menu" ng-model="pickUp">-->
-                          <!--<li ng-repeat="location in locations"><a href="#" ng-click="setDropoffLocation(location)">{{location.title}}</a></li>-->
-                        <!--</ul>-->
-                        <input type="text" id="ajax" list="json-datalist" placeholder="e.g. datalist">
-                        <datalist id="json-datalist"></datalist>
+                        <input type="text" data-toggle="dropdown" ng-model="dropOff.place_name" ng-change="searchLocation(dropOff.place_name)" ng-model-options='{ debounce: 500 }'>
+                        </input>
+                        <ul class="dropdown-menu" ng-model="pickUp">
+                          <li ng-repeat="location in locations"><a href="#" ng-click="setDropoffLocation(location)">{{location.place_name}}</a></li>
+                        </ul>
                       </div>
                     </div>
                     <!-- Text input-->
@@ -141,7 +135,6 @@
 
                         <button id="singlebutton" name="singlebutton" class="btn btn-lg btn-success center-block btn-group-justified" ng-click="createRide()" ng-if="isRideValid">Chalo</button>
 
-
                       </div>
 
                     </div>
@@ -154,24 +147,6 @@
           </div>
         </div>
         </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
