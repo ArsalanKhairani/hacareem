@@ -52,7 +52,7 @@ angular.module('starter', ['ionic'])
       ETA: baseURL + 'get_eta_time/',
       ETA_PRICE: '',
       LOCATIONS: baseURL + 'getLocations/',
-      GET_PRODUCTS: baseURL + 'get_products/'
+      GET_PRODUCTS: baseURL + 'get_products/',
     };
 
 
@@ -200,6 +200,12 @@ angular.module('starter', ['ionic'])
       $http.get(urlMap.LOCATIONS).then(function (response) {
         if (response && response.ok) {
           $scope.locations = response.locations;
+          var dataList = document.getElementById('json-datalist');
+          angular.forEach($scope.locations, function (val) {
+            var option = document.createElement('option');
+            option.value = val['place_name'] | '';
+            dataList.appendChild(option);
+          });
         }
       }, function errorCallback() {
         hideLoading();

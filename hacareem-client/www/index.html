@@ -97,11 +97,13 @@
                       <!--</div>-->
                       <label class="control-label" for="name">Dropoff Location</label>
                       <div class="dropdown">
-                        <button class="btn dropdown-toggle" type="button" data-toggle="dropdown" ng-model="dropOff.title">{{dropOff.title || "Select Pickup Location"}}
-                          <span class="caret"></span></button>
-                        <ul class="dropdown-menu" ng-model="pickUp">
-                          <li ng-repeat="location in locations"><a href="#" ng-click="setDropoffLocation(location)">{{location.title}}</a></li>
-                        </ul>
+                        <!--<button class="btn dropdown-toggle" type="button" data-toggle="dropdown" ng-model="dropOff.title">{{dropOff.title || "Select Pickup Location"}}-->
+                          <!--<span class="caret"></span></button>-->
+                        <!--<ul class="dropdown-menu" ng-model="pickUp">-->
+                          <!--<li ng-repeat="location in locations"><a href="#" ng-click="setDropoffLocation(location)">{{location.title}}</a></li>-->
+                        <!--</ul>-->
+                        <input type="text" id="ajax" list="json-datalist" placeholder="e.g. datalist">
+                        <datalist id="json-datalist"></datalist>
                       </div>
                     </div>
                     <!-- Text input-->
