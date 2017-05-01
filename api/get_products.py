@@ -1,15 +1,21 @@
+"""
+Lambda function to get products of careem in our current location.
+For static kiosk this API can be cached.
+"""
+
 def lambda_handler(event, context):
     import json
+    import requests
+
     result = {'statusCode': 400, 'body': json.dumps({'action_status': 'failure'})}
     lat = event.get('queryStringParameters', {}).get('lat', 0)
     lng = event.get('queryStringParameters', {}).get('lng', 0)
-    payload = {'start_latitude': lat, 'start_longitude': lng}
-    headers = {'Authorization': 'test-crl54u6cj8f3a7hkc304359lhg'}
-    import requests
+    payload = {'latitude': lat, 'longitude': lng}
+    headers = {'Authorization': AUTH_TOKEN}
 
     try:
-        response = requests.get(url='http://qa-interface.careem-engineering.com/v1/estimates/time', headers=headers,
-                                params=payload)
+        url = '{}/v1/products'.format(API_URL)
+        response = requests.get(url=url, headers=headers, params=payload)
     except Exception:
         return result
 

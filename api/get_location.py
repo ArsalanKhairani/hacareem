@@ -1,5 +1,11 @@
+"""
+Incomplete.
+"""
+
 def lambda_handler(event, context):
     import json
+    import requests
+
     result = {'statusCode': 400, 'body': json.dumps({'action_status': 'failure'})}
     s_lat = event.get('queryStringParameters', {}).get('s_lat', 0)
     s_lon = event.get('queryStringParameters', {}).get('s_lon', 0)
@@ -21,12 +27,11 @@ def lambda_handler(event, context):
         'booking_type': b_type,
         'product_id': p_id
     }
-    headers = {'Authorization': 'test-crl54u6cj8f3a7hkc304359lhg'}
-    import requests
+    headers = {'Authorization': AUTH_TOKEN}
 
     try:
-        response = requests.get(url='http://qa-interface.careem-engineering.com/v1/estimates/price', headers=headers,
-                                params=payload)
+        url = '{}/v1/estimates/price'.format(API_URL)
+        response = requests.get(url=url, headers=headers, params=payload)
     except Exception:
         return result
 

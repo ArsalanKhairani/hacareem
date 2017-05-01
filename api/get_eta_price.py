@@ -1,5 +1,11 @@
+"""
+Lambda function to get estimated price of ride using Careem's API.
+"""
+
 def lambda_handler(event, context):
     import json
+    import requests
+
     result = {'statusCode': 400, 'body': json.dumps({'action_status': 'failure'})}
     s_lat = event.get('queryStringParameters', {}).get('s_lat', 0)
     s_lon = event.get('queryStringParameters', {}).get('s_lon', 0)
@@ -7,12 +13,11 @@ def lambda_handler(event, context):
     e_lon = event.get('queryStringParameters', {}).get('e_lon', 0)
     # For now it is NOW
     b_type = event.get('queryStringParameters', {}).get('b_type', 'NOW')
-
     p_id = event.get('queryStringParameters', {}).get('p_id')
-
     if not p_id:
         return result
 
+    # Create payload for Careem's API
     payload = {
         'start_latitude': s_lat,
         'start_longitude': s_lon,
@@ -21,16 +26,15 @@ def lambda_handler(event, context):
         'booking_type': b_type,
         'product_id': p_id
     }
-    headers = {'Authorization': 'test-crl54u6cj8f3a7hkc304359lhg'}
-    import requests
+    headers = {'Authorization': AUTH_TOKEN}
 
     try:
-        response = requests.get(url='http://qa-interface.careem-engineering.com/v1/estimates/price', headers=headers,
-                                params=payload)
+        response = requests.get(url='{0}/v1/estimates/price'.format(API_URL), headers=headers, params=payload)
     except Exception:
         return result
 
     if response and getattr(response, 'status_code', 0) != 200:
         return result
 
+    # We are returning the response as it is. Our front end will parse it.
     return {'statusCode': 200, 'body': response.text}

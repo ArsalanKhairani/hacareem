@@ -1,3 +1,7 @@
+"""
+Lambda function to generate auth token for a single request and send it via SMS to customer
+"""
+
 def lambda_handler(event, context):
     import boto3
     from uuid import uuid4
@@ -6,28 +10,34 @@ def lambda_handler(event, context):
     import json
     import urllib
 
+    # Fetch number from the request body
     req_body = json.loads(event['body'])
     number = req_body.get('number')
+
+    # Generate Code. For one time code use python OTP (pyotp) package
     code = str(uuid4().fields[-1])[:6]
     code_str = "Your verification code is: {}".format(code)
 
-    url = "https://api.twilio.com/2010-04-01/Accounts/AC7908ac6b94e3dd4cfc8c83eb76f260b4/Messages.json"
-    data = {"To": number, "From": "+17609614981", "Body": code_str}
+    url = "https://api.twilio.com/2010-04-01/Accounts/{0}/Messages.json".format(TWILIO_KEY_ID)
+    data = {"To": number, "From": TWILIO_NUMBER, "Body": code_str}
     payload = urllib.urlencode(data)
     headers = {
-        'authorization': "Basic QUM3OTA4YWM2Yjk0ZTNkZDRjZmM4YzgzZWI3NmYyNjBiNDoyZGM1NTkwMGM5N2Y2Yzg5OGU5N2M0MmM2Zjc3Yjg2YQ==",
+        'authorization': TWILIO_BASE64_AUTH,
         'content-type': "application/x-www-form-urlencoded"
     }
 
+    # Send request to Twilio API to generate SMS
     res = requests.request("POST", url, data=payload, headers=headers)
     response = {'status': 'failure'}
     if not res.ok:
         response['message'] = 'Unable to send message'
         return response
 
+    # Using AWS KMS encrypt the token and send it in response. Client will then send it back in the next request
+    # That way we don't have to maintain any database on our side.
     kms_client = boto3.client('kms')
     res = kms_client.encrypt(
-        KeyId='arn:aws:kms:us-east-1:256503761977:key/8d484ab7-5c89-4ed0-a0ff-4fd076076cac',
+        KeyId=KMS_KEY_ARN,
         Plaintext=code
     )
 
